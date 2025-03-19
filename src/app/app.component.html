@@ -1,4 +1,26 @@
-<div class="layout-wrapper layout-static" [ngClass]="containerClass">
+<div class="layout-wrapper min-h-screen layout-static" [ngClass]="{ 'layout-static-active': layoutService.layoutState().menuDesktopActive }">
+    <app-topbar></app-topbar>
+
+    <div
+        class="layout-sidebar fixed top-[6rem] w-[20rem] h-[calc(100vh-8rem)] z-[999] overflow-y-auto select-none bg-surface-overlay p-2.5 rounded-none transition-transform duration-[var(--layout-section-transition-duration)] ease-in-out"
+        [ngClass]="layoutService.layoutState().menuDesktopActive ? 'left-8' : 'transform-[translateX(-100%)] left-0'"
+    >
+        <app-sidebar></app-sidebar>
+    </div>
+
+    <div
+        class="layout-main-container flex flex-col min-h-screen justify-between px-8 pt-[6rem] transition-all duration-200"
+        [ngClass]="{ 'ml-[22rem]': layoutService.layoutState().menuDesktopActive, 'ml-0 pl-8': !layoutService.layoutState().menuDesktopActive }"
+    >
+        <div class="layout-main flex-1 pb-8">
+            <router-outlet></router-outlet>
+        </div>
+
+        <!-- <app-footer></app-footer> -->
+    </div>
+</div>
+
+<!-- <div class="layout-wrapper layout-static" [ngClass]="containerClass">
     <app-topbar></app-topbar>
     <div class="layout-sidebar" style="transition-duration: 200ms; transition-delay: 0ms">
         <app-sidebar></app-sidebar>
@@ -7,7 +29,5 @@
         <div class="layout-main">
             <router-outlet></router-outlet>
         </div>
-        <!-- <app-footer></app-footer> -->
     </div>
-    <!-- </div> -->
-</div>
+</div> -->
