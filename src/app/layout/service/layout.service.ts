@@ -3,18 +3,11 @@ import { BehaviorSubject, Subject } from 'rxjs';
 
 export interface layoutConfig {
     preset?: string;
-    primary?: string;
-    surface?: string | undefined | null;
     darkTheme?: boolean;
-    menuMode?: string;
 }
 
 interface LayoutState {
-    staticMenuDesktopInactive?: boolean;
-    overlayMenuActive?: boolean;
-    configSidebarVisible?: boolean;
-    staticMenuMobileActive?: boolean;
-    menuHoverActive?: boolean;
+    menuDesktopActive?: boolean;
 }
 
 interface MenuChangeEvent {
@@ -28,18 +21,11 @@ interface MenuChangeEvent {
 export class LayoutService {
     _config: layoutConfig = {
         preset: 'Aura',
-        primary: 'emerald',
-        surface: null,
-        darkTheme: false,
-        menuMode: 'static'
+        darkTheme: false
     };
 
     _state: LayoutState = {
-        staticMenuDesktopInactive: false,
-        overlayMenuActive: false,
-        configSidebarVisible: false,
-        staticMenuMobileActive: false,
-        menuHoverActive: false
+        menuDesktopActive: true
     };
 
     layoutConfig = signal<layoutConfig>(this._config);
@@ -47,8 +33,6 @@ export class LayoutService {
     layoutState = signal<LayoutState>(this._state);
 
     private configUpdate = new Subject<layoutConfig>();
-
-    private overlayOpen = new Subject<any>();
 
     private menuSource = new BehaviorSubject<MenuChangeEvent | null>(null);
 
@@ -60,19 +44,7 @@ export class LayoutService {
 
     configUpdate$ = this.configUpdate.asObservable();
 
-    overlayOpen$ = this.overlayOpen.asObservable();
-
-    theme = computed(() => (this.layoutConfig()?.darkTheme ? 'light' : 'dark'));
-
-    isSidebarActive = computed(() => this.layoutState().overlayMenuActive || this.layoutState().staticMenuMobileActive);
-
     isDarkTheme = computed(() => this.layoutConfig().darkTheme);
-
-    getPrimary = computed(() => this.layoutConfig().primary);
-
-    getSurface = computed(() => this.layoutConfig().surface);
-
-    isOverlay = computed(() => this.layoutConfig().menuMode === 'overlay');
 
     transitionComplete = signal<boolean>(false);
 
@@ -99,6 +71,8 @@ export class LayoutService {
     }
 
     private handleDarkModeTransition(config: layoutConfig): void {
+        console.log('🧐🧐🧐', document.startViewTransition);
+
         if ((document as any).startViewTransition) {
             this.startViewTransition(config);
         } else {
@@ -136,31 +110,7 @@ export class LayoutService {
     }
 
     onMenuToggle() {
-        if (this.isOverlay()) {
-            this.layoutState.update((prev) => ({ ...prev, overlayMenuActive: !this.layoutState().overlayMenuActive }));
-
-            if (this.layoutState().overlayMenuActive) {
-                this.overlayOpen.next(null);
-            }
-        }
-
-        if (this.isDesktop()) {
-            this.layoutState.update((prev) => ({ ...prev, staticMenuDesktopInactive: !this.layoutState().staticMenuDesktopInactive }));
-        } else {
-            this.layoutState.update((prev) => ({ ...prev, staticMenuMobileActive: !this.layoutState().staticMenuMobileActive }));
-
-            if (this.layoutState().staticMenuMobileActive) {
-                this.overlayOpen.next(null);
-            }
-        }
-    }
-
-    isDesktop() {
-        return window.innerWidth > 991;
-    }
-
-    isMobile() {
-        return !this.isDesktop();
+        this.layoutState.update((prev) => ({ ...prev, menuDesktopActive: !prev.menuDesktopActive }));
     }
 
     onConfigUpdate() {
@@ -169,6 +119,7 @@ export class LayoutService {
     }
 
     onMenuStateChange(event: MenuChangeEvent) {
+        console.log('asdasdasd', event);
         this.menuSource.next(event);
     }
 
